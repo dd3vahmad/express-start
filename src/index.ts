@@ -3,6 +3,9 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import inquirer from "inquirer";
+import fs from "fs-extra";
+import path from "path";
+import ejs from "ejs";
 
 const program = new Command()
   .name("create-express-start")
@@ -45,6 +48,8 @@ program.parse(process.argv);
 interface WizardAnswers {
   language: "JavaScript" | "TypeScript";
   orm: "Prisma" | "Sequelize" | "None";
+  validator: "Joi" | "Zod" | "None";
+  auth: "JWT" | "Session" | "None";
   logger: boolean;
   parser: boolean;
 }
@@ -60,9 +65,23 @@ async function runWizard(): Promise<WizardAnswers> {
     },
     {
       type: "list" as const,
+      name: "auth",
+      message: "Choose an Auth Strategy (or none):",
+      choices: ["JWT", "Session", "None"] as const,
+      default: "None",
+    },
+    {
+      type: "list" as const,
       name: "orm",
       message: "Choose an ORM (or none):",
       choices: ["Prisma", "Sequelize", "None"] as const,
+      default: "None",
+    },
+    {
+      type: "list" as const,
+      name: "validator",
+      message: "Choose a validation library (or none):",
+      choices: ["Joi", "Zod", "None"] as const,
       default: "None",
     },
     {
@@ -83,5 +102,141 @@ async function runWizard(): Promise<WizardAnswers> {
 }
 
 async function generateProject(projectName: string, answers: WizardAnswers) {
-  console.log("Project name: ", projectName, "Answers: ", answers);
+  const rootDir = path.dirname(new URL(import.meta.url).pathname); // For ESM
+  const templateDir = path.join(rootDir, "../templates");
+  const destDir = path.join(process.cwd(), projectName);
+
+  await fs.ensureDir(destDir);
+
+  // Copy and render all templates
+  const files = await fs.readdir(templateDir);
+  for (const file of files) {
+    const src = path.join(templateDir, file);
+    const dest = path.join(destDir, file);
+
+    const stat = await fs.stat(src);
+    if (stat.isDirectory()) {
+      await fs.copy(src, dest);
+    } else {
+      const content = await ejs.renderFile(src, answers, { async: true });
+      await fs.writeFile(dest, content);
+    }
+  }
+
+  // Dynamic package.json
+  const pkg: any = {
+    name: projectName,
+    version: "1.0.0",
+    type: answers.language === "TypeScript" ? "module" : undefined,
+    main: answers.language === "TypeScript" ? "dist/index.js" : "src/index.js",
+    scripts: {
+      start:
+        answers.language === "TypeScript"
+          ? "tsx src/index.ts"
+          : "node src/index.js",
+      dev:
+        answers.language === "TypeScript"
+          ? "tsx watch src/index.ts"
+          : "nodemon src/index.js",
+      build:
+        answers.language === "TypeScript"
+          ? "tsc && cp src/index.ts dist/index.ts"
+          : 'echo "No build needed"',
+    },
+    dependencies: {
+      ...(answers.auth !== "None" && {
+        bcryptjs: "^3.0.2",
+        "cookie-parser": "^1.4.7",
+      }),
+      ...(answers.auth === "JWT" && {
+        jsonwebtoken: "^9.0.2"
+      }),
+      ...(answers.auth === "Session" && {
+        "express-session": "^1.18.2"
+      }),
+      ...(answers.orm === "Prisma" && {
+        "@prisma/client": "^6.16.3",
+      }),
+      ...(answers.orm === "Sequelize" && {
+        sequelize: "^6.37.7",
+        pg: "^8.13.0",
+      }),
+      ...(answers.logger && { morgan: "^1.10.1" }),
+      ...(answers.parser && { "body-parser": "^1.20.3" }),
+
+      // Always: basics
+      express: "^5.1.0",
+      dotenv: "^17.2.3",
+      cors: "^2.8.5",
+      helmet: "^8.1.0",
+    },
+    devDependencies: {
+      nodemon: "^3.1.10",
+      ...(answers.language === "TypeScript" && {
+        typescript: "^5.9.3",
+        tsx: "^4.20.6",
+        "@types/node": "^24.6.2",
+        "@types/express": "^5.0.3",
+        "@types/cors": "^2.8.19",
+        ...(answers.auth === "JWT" && {
+          "@types/jsonwebtoken": "^9.0.10"
+        }),
+        ...(answers.auth === "Session" && {
+          "@types/express-session": "^9.0.10"
+        }),
+        ...(answers.logger && {
+          "@types/morgan": "^1.9.10"
+        }),
+        ...(answers.auth !== "None" && {
+          "@types/cookie-parser": "^1.4.9"
+        }),
+        ...(answers.orm !== "Prisma" && {
+          prisma: "^6.16.3"
+        }),
+      }),
+    },
+  };
+
+  await fs.writeJson(path.join(destDir, "package.json"), pkg, { spaces: 2 });
+
+  // TS-specific files
+  if (answers.language === "TypeScript") {
+    const tsconfig = await ejs.renderFile(
+      path.join(templateDir, "tsconfig.json.ejs"),
+      answers,
+      { async: true }
+    );
+    await fs.writeFile(path.join(destDir, "tsconfig.json"), tsconfig);
+
+    // Type defs for utils
+    const types = `
+      // utils/extend-prototypes.d.ts (generated)
+      declare global {
+        interface Array<T> {
+          binarySearch(value: T): number;
+          chunk(size: number): T[][];
+        }
+        interface Object {
+          pick(keys: string[]): Record<string, any>;
+        }
+      }
+
+      export {};
+    `;
+    await fs.writeFile(
+      path.join(destDir, "src", "utils", "extend-prototypes.d.ts"),
+      types
+    );
+  }
+
+  // ORM extras (basic stubs)
+  if (answers.orm === "Prisma") {
+    await fs.copy(
+      path.join(templateDir, "prisma"),
+      path.join(destDir, "prisma")
+    );
+  } else if (answers.orm === "Sequelize") {
+    // Stub a models dir or config
+    await fs.ensureDir(path.join(destDir, "src", "models"));
+  }
 }
