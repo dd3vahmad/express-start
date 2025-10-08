@@ -90,9 +90,7 @@ const program = new Command()
       `) +
       chalk.yellow(`\n Successfully created a new ExpressStart project!\n`) +
       chalk.white(`
-
-  Now run these commands:
-
+  Now run these commands:\n
     cd ${name}
     npm install
     ${answers.orm === "Prisma" && "npx prisma generate"}
@@ -129,7 +127,7 @@ async function runWizard(): Promise<WizardAnswers> {
     {
       type: "confirm" as const,
       name: "extendPrototypes",
-      message: "Should extend array & object prototypes?:",
+      message: "Should extend prototypes?:",
       default: true,
     },
     {

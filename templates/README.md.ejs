@@ -1,6 +1,6 @@
 # <%= projectName %>
 
-ExpressStart project.
+ExpressStart
 
 ## Quick Start
 npm install
@@ -10,12 +10,64 @@ npx prisma generate
 cp .env.example .env
 npm run dev
 
+## Recomended folder structure
+📦 <%= projectName %>/
+├── 📁 src/
+│   ├── 📁 config/           # Environment variables, database, and app configs
+│   │   ├── db.ts
+│   │   ├── env.ts
+│   │   └── logger.ts
+│   │
+│   ├── 📁 models/           # Mongoose / Prisma / Sequelize models
+│   │   └── user.model.ts
+│   │
+│   ├── 📁 controllers/      # Route handlers — contain business logic
+│   │   └── user.controller.ts
+│   │
+│   ├── 📁 routes/           # Express routers for each resource
+│   │   ├── user.routes.ts
+│   │   └── index.ts
+│   │
+│   ├── 📁 middlewares/      # Auth, error handling, rate limiting, etc.
+│   │   ├── auth.middleware.ts
+│   │   ├── error.middleware.ts
+│   │   └── rateLimiter.ts
+│   │
+│   ├── 📁 services/         # Business logic, reusable between controllers
+│   │   └── user.service.ts
+│   │
+│   ├── 📁 utils/            # Helper functions (e.g., hashing, token utils)
+│   │   ├── hash.util.ts
+│   │   ├── jwt.util.ts
+│   │   ├── response.util.ts
+│   │   └── extend-prototypes.js
+│   │
+│   ├── 📁 validators/       # Joi / Zod validation schemas
+│   │   └── user.validator.ts
+│   │
+│   ├── 📁 types/            # Global TypeScript type declarations
+│   │   └── express.d.ts
+│   │
+│   ├── 📁 tests/            # Unit/integration tests (Jest, Mocha, etc.)
+│   │   └── user.test.ts
+│   │
+│   ├── app.ts               # Express app setup (middlewares, routes)
+│   ├── server.ts            # App entry point — starts the server
+│   └── global.d.ts          # Global typings (optional)
+│
+├── .env                     # Environment variables
+├── .env.example             # Example of required env vars
+├── .gitignore
+├── package.json
+├── tsconfig.json
+└── README.md
+
 ## Utils
-<% if (answers.language === 'TypeScript') { %> 
+<% if (answers.language === 'TypeScript') { -%> 
 Prototype extensions are available in `src/utils/extend-prototypes.ts`. Call `extendPrototypes()` in app.js to enable.
-<% } else { %>
+<% } else { -%>
 Prototype extensions are available in `src/utils/extend-prototypes.js`. Call `extendPrototypes()` in app.js to enable.
-<% } %>
+<% } -%>
 
 ## Warnings
 - Prototype extensions use non-enumerable properties for safety.
