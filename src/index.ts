@@ -217,19 +217,19 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
     name: projectName,
     version: "1.0.0",
     type: answers.language === "TypeScript" ? "module" : undefined,
-    main: answers.language === "TypeScript" ? "dist/index.js" : "src/index.js",
+    main: answers.language === "TypeScript" ? "dist/server.js" : "src/server.js",
     scripts: {
       start:
         answers.language === "TypeScript"
-          ? "tsx src/index.ts"
-          : "node src/index.js",
+          ? "tsx src/server.ts"
+          : "node src/server.js",
       dev:
         answers.language === "TypeScript"
-          ? "tsx watch src/index.ts"
-          : "nodemon src/index.js",
+          ? "tsx watch src/server.ts"
+          : "nodemon src/server.js",
       build:
         answers.language === "TypeScript"
-          ? "tsc && cp src/index.ts dist/index.ts"
+          ? "tsc && cp src/server.ts dist/server.ts"
           : 'echo "No build needed"',
     },
     dependencies: {
