@@ -74,7 +74,7 @@ const program = new Command()
       }
     }
 
-    console.log(chalk.blue(`Creating ExpressStart project: ${name}`));
+    console.log(chalk.green(`Initializing ExpressStart: ${name}\n`));
 
     const answers = await runWizard();
     await generateProject(name, { ...answers, projectName: name, answers });
@@ -86,12 +86,12 @@ const program = new Command()
  |  _| \\ \\/ / '_ \\| '__/ _ \\/ __/ __\\___ \\| __/ _\` | '__| __|
  | |___ >  <| |_) | | |  __/\\__ \\__ \\___) | || (_| | |  | |_ 
  |_____/_/\\_\\ .__/|_|  \\___||___/___/____/ \\__\\__,_|_|   \\__|
-             |_|                                              
+            |_|                                              
       `) +
       chalk.yellow(`\n Successfully created a new ExpressStart project!\n`) +
       chalk.white(`
 
-    Now run these commands:
+  Now run these commands:
 
     cd ${name}
     npm install
