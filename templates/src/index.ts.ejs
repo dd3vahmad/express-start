@@ -42,9 +42,11 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).json({ error: 'Something broke!' });
 });
 
+<% if (answers.extendPrototypes) { %>
 // Extend prototypes (opt-in call)
 import { extendPrototypes } from './utils/extend-prototypes';
 extendPrototypes();  // Uncomment to enable utils
+<% } %>
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

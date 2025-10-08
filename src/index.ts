@@ -6,6 +6,7 @@ import inquirer from "inquirer";
 import fs from "fs-extra";
 import path from "path";
 import ejs from "ejs";
+import { fileURLToPath } from "url";
 
 const program = new Command()
   .name("create-express-start")
@@ -78,11 +79,21 @@ const program = new Command()
     console.log(chalk.blue(`🚀 Creating ExpressStart project: ${name}`));
 
     const answers = await runWizard();
-    await generateProject(name, { ...answers, projectName: name });
+    await generateProject(name, { ...answers, projectName: name, answers });
 
     console.log(
       chalk.green(
-        `✅ Project "${name}" created!\n   cd ${name} && npm install && npm run dev`
+        `
+          ✅ Successfully created a new ExpressStart project!
+            
+          Project name: "${name}"\n   
+          
+          Now run these commands:
+
+          cd ${name}\n 
+          npm install\ 
+          npm run dev
+        `
       )
     );
   })
@@ -97,7 +108,9 @@ interface WizardAnswers {
   validator: "Joi" | "Zod" | "None";
   auth: "JWT" | "Session" | "None";
   logger: boolean;
+  extendPrototypes: boolean;
   parser: boolean;
+  answers: WizardAnswers;
 }
 
 async function runWizard(): Promise<WizardAnswers> {
@@ -108,6 +121,12 @@ async function runWizard(): Promise<WizardAnswers> {
       message: "Choose your language:",
       choices: ["JavaScript", "TypeScript"] as const,
       default: "JavaScript",
+    },
+    {
+      type: "confirm" as const,
+      name: "extendPrototypes",
+      message: "Should extend array & object prototypes?:",
+      default: false,
     },
     {
       type: "list" as const,
@@ -148,26 +167,50 @@ async function runWizard(): Promise<WizardAnswers> {
 }
 
 async function generateProject(projectName: string, answers: WizardAnswers) {
-  const rootDir = path.dirname(new URL(import.meta.url).pathname); // For ESM
-  const templateDir = path.join(rootDir, "../templates");
+  if (!projectName || projectName.trim() === "" || projectName === "/" || projectName.startsWith("..")) {
+    throw new Error("❌ Invalid project name or unsafe directory.");
+  }
+
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+
+  const templateDir = path.join(__dirname, "../templates");
   const destDir = path.join(process.cwd(), projectName);
+
+  // Safety: Prevent overwriting an existing directory with files
+  if (await fs.pathExists(destDir)) {
+    const files = await fs.readdir(destDir);
+    if (files.length > 0) {
+      throw new Error(`❌ Destination directory '${projectName}' is not empty.`);
+    }
+  }
 
   await fs.ensureDir(destDir);
 
-  // Copy and render all templates
-  const files = await fs.readdir(templateDir);
-  for (const file of files) {
-    const src = path.join(templateDir, file);
-    const dest = path.join(destDir, file);
+  // Recursive renderer
+  const renderTemplates = async (srcDir: string, destDir: string) => {
+    const entries = await fs.readdir(srcDir, { withFileTypes: true });
 
-    const stat = await fs.stat(src);
-    if (stat.isDirectory()) {
-      await fs.copy(src, dest);
-    } else {
-      const content = await ejs.renderFile(src, answers, { async: true });
-      await fs.writeFile(dest, content);
+    for (const entry of entries) {
+      const srcPath = path.join(srcDir, entry.name);
+      const destPath = path.join(destDir, entry.name.replace(/\.ejs$/, ""));
+
+      if (entry.isDirectory()) {
+        await fs.ensureDir(destPath);
+        await renderTemplates(srcPath, destPath); // recursion ✅
+      } else {
+        // Render EJS template or copy file
+        if (entry.name.endsWith(".ejs")) {
+          const content = await ejs.renderFile(srcPath, answers, { async: true });
+          await fs.writeFile(destPath, content, "utf8");
+        } else {
+          await fs.copy(srcPath, destPath);
+        }
+      }
     }
-  }
+  };
+
+  await renderTemplates(templateDir, destDir);
 
   // Dynamic package.json
   const pkg: any = {
