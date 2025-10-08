@@ -1,29 +1,29 @@
-<% if (answers.language === 'JavaScript') { %>
+<% if (answers.language === 'JavaScript') { -%>
 import express from 'express';
-<% } else { %>
+<% } else { -%>
 import express, { Request, Response } from 'express';
-<% } %>
+<% } -%>
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
-<% if (answers.parser) { %>
+<% if (answers.parser) { -%>
 import bodyParser from 'body-parser';
-<% } %>
-<% if (answers.logger) { %>
+<% } -%>
+<% if (answers.logger) { -%>
 import morgan from 'morgan';
-<% } %>
-<% if (answers.orm === 'Prisma') { %>
+<% } -%>
+<% if (answers.orm === 'Prisma') { -%>
 import { PrismaClient } from '@prisma/client';
-<% } else if (answers.orm === 'Sequelize') { %>
+<% } else if (answers.orm === 'Sequelize') { -%>
 import { Sequelize } from 'sequelize';
-<% } %>
-<% if (answers.extendPrototypes) { %>
-<% if (answers.language === 'JavaScript') { %>  
+<% } -%>
+<% if (answers.extendPrototypes) { -%>
+<% if (answers.language === 'JavaScript') { -%>  
 import { extendPrototypes } from './utils/extend-prototypes.js';
-<% } else { %>
+<% } else { -%>
 import { extendPrototypes } from './utils/extend-prototypes';
-<% } %>
-<% } %>
+<% } -%>
+<% } -%>
 
 dotenv.config();
 
@@ -31,41 +31,42 @@ const app = express();
 
 app.use(helmet());
 app.use(cors());
-
-<% if (answers.parser) { %>
+<% if (answers.parser) { -%>
 app.use(bodyParser.json());
-<% } %>
-<% if (answers.logger) { %>
+<% } -%>
+<% if (answers.logger) { -%>
 app.use(morgan('combined'));
-<% } %>
-<% if (answers.orm === 'Prisma') { %>
+<% } -%>
+
+<% if (answers.orm === 'Prisma') { -%>
 const prisma = new PrismaClient();
-<% } else if (answers.orm === 'Sequelize') { %>
+<% } else if (answers.orm === 'Sequelize') { -%>
 const sequelize = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost:5432/mydb');
-<% } %>
+<% } -%>
+
 <% if (answers.language === 'JavaScript') { %>
 app.get('/', (req, res) => {
   res.json({ message: 'Hello from ExpressStart!' });
 });
-<% } else { %>
+<% } else { -%>
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Hello from ExpressStart!' });
 });
-<% } %>
+<% } -%>
 
 <% if (answers.language === 'JavaScript') { %>
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });
-<% } else { %>
+<% } else { -%>
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });
-<% } %>
+<% } -%>
 <% if (answers.extendPrototypes) { %>
-extendPrototypes();  // Comment to disable utils
-<% } %>
+extendPrototypes(); // Comment to disable utils
+<% } -%>
 
 export default app;

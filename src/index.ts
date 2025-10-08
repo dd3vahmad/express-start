@@ -208,7 +208,10 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
         await renderTemplates(srcPath, destPath);
       } else {
         if (entry.name.endsWith(".ejs")) {
-          const content = await ejs.renderFile(srcPath, answers, { async: true });
+          const content = await ejs.renderFile(srcPath, answers,
+            {
+              async: true,
+            });
           await fs.writeFile(destPath, content, "utf8");
         } else {
           await fs.copy(srcPath, destPath);

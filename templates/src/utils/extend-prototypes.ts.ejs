@@ -1,4 +1,4 @@
-<% if (answers.language == "TypeScript") { %>
+<% if (answers.language == "TypeScript") { -%>
 export function extendPrototypes() {
   // Array.binarySearch (assumes sorted array)
   if (typeof Array.prototype.binarySearch === 'undefined') {
@@ -61,7 +61,7 @@ export function extendPrototypes() {
 
   console.log('🔧 Prototypes extended safely (non-enumerable)');
 }
-<% } else { %>
+<% } else { -%>
 export function extendPrototypes() {
   // Array.binarySearch (assumes sorted array)
   if (typeof Array.prototype.binarySearch === 'undefined') {
@@ -122,4 +122,4 @@ export function extendPrototypes() {
     });
   }
 }
-<% } %>
+<% } -%>
