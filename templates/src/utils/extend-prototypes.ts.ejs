@@ -1,0 +1,133 @@
+<% if (answers.language == "TypeScript") { %>
+// Safe prototype extensions: non-enumerable, idempotent, opt-in
+
+export function extendPrototypes() {
+  // Array.binarySearch (assumes sorted array)
+  if (typeof Array.prototype.binarySearch === 'undefined') {
+    Object.defineProperty(Array.prototype, 'binarySearch', {
+      value: function <T>(this: T[], value: T): number {
+        let low = 0;
+        let high = this.length - 1;
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+          const midVal = this[mid];
+          if (midVal < value) {
+            low = mid + 1;
+          } else if (midVal > value) {
+            high = mid - 1;
+          } else {
+            return mid;
+          }
+        }
+        return -1;
+      },
+      writable: true,
+      enumerable: false,  // Hidden from for...in, Object.keys
+      configurable: true
+    });
+  }
+
+  // Object.pick
+  if (typeof Object.prototype.pick === 'undefined') {
+    Object.defineProperty(Object.prototype, 'pick', {
+      value: function (this: any, keys: string[]): Record<string, any> {
+        const result: Record<string, any> = {};
+        for (const key of keys) {
+          if (Object.hasOwn(this, key)) {  // Modern hasOwn
+            result[key] = this[key];
+          }
+        }
+        return result;
+      },
+      writable: true,
+      enumerable: false,
+      configurable: true
+    });
+  }
+
+  // Array.chunk
+  if (typeof Array.prototype.chunk === 'undefined') {
+    Object.defineProperty(Array.prototype, 'chunk', {
+      value: function <T>(this: T[], size: number): T[][] {
+        const chunks: T[][] = [];
+        for (let i = 0; i < this.length; i += size) {
+          chunks.push(this.slice(i, i + size));
+        }
+        return chunks;
+      },
+      writable: true,
+      enumerable: false,
+      configurable: true
+    });
+  }
+
+  console.log('🔧 Prototypes extended safely (non-enumerable)');
+}
+<% } %>
+
+<% if (answers.language === "JavaScript") { %>
+// Safe prototype extensions: non-enumerable, idempotent, opt-in
+
+export function extendPrototypes() {
+  // Array.binarySearch (assumes sorted array)
+  if (typeof Array.prototype.binarySearch === 'undefined') {
+    Object.defineProperty(Array.prototype, 'binarySearch', {
+      value: function (value) {
+        let low = 0;
+        let high = this.length - 1;
+        while (low <= high) {
+          const mid = Math.floor((low + high) / 2);
+          const midVal = this[mid];
+          if (midVal < value) {
+            low = mid + 1;
+          } else if (midVal > value) {
+            high = mid - 1;
+          } else {
+            return mid;
+          }
+        }
+        return -1;
+      },
+      writable: true,
+      enumerable: false, // Hidden from for...in, Object.keys
+      configurable: true
+    });
+  }
+
+  // Object.pick
+  if (typeof Object.prototype.pick === 'undefined') {
+    Object.defineProperty(Object.prototype, 'pick', {
+      value: function (keys) {
+        const result = {};
+        for (const key of keys) {
+          if (Object.hasOwn(this, key)) { // Modern hasOwn
+            result[key] = this[key];
+          }
+        }
+        return result;
+      },
+      writable: true,
+      enumerable: false,
+      configurable: true
+    });
+  }
+
+  // Array.chunk
+  if (typeof Array.prototype.chunk === 'undefined') {
+    Object.defineProperty(Array.prototype, 'chunk', {
+      value: function (size) {
+        const chunks = [];
+        for (let i = 0; i < this.length; i += size) {
+          chunks.push(this.slice(i, i + size));
+        }
+        return chunks;
+      },
+      writable: true,
+      enumerable: false,
+      configurable: true
+    });
+  }
+
+  console.log('🔧 Prototypes extended safely (non-enumerable)');
+}
+<% } %>

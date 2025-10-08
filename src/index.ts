@@ -126,7 +126,7 @@ async function runWizard(): Promise<WizardAnswers> {
       type: "confirm" as const,
       name: "extendPrototypes",
       message: "Should extend array & object prototypes?:",
-      default: false,
+      default: true,
     },
     {
       type: "list" as const,
@@ -299,23 +299,24 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
 
     // Type defs for utils
     const types = `
-      // utils/extend-prototypes.d.ts (generated)
-      declare global {
-        interface Array<T> {
-          binarySearch(value: T): number;
-          chunk(size: number): T[][];
-        }
-        interface Object {
-          pick(keys: string[]): Record<string, any>;
-        }
-      }
+// utils/extend-prototypes.d.ts (generated)
+declare global {
+  interface Array<T> {
+    binarySearch(value: T): number;
+    chunk(size: number): T[][];
+  }
+  interface Object {
+    pick(keys: string[]): Record<string, any>;
+  }
+}
 
-      export {};
+export {};
     `;
-    await fs.writeFile(
-      path.join(destDir, "src", "utils", "extend-prototypes.d.ts"),
-      types
-    );
+
+    const typesDir = path.join(destDir, "src", "types");
+    await fs.ensureDir(typesDir); // ✅ ensure folder exists
+
+    await fs.writeFile(path.join(typesDir, "extend-prototypes.d.ts"), types);
   }
 
   // ORM extras (basic stubs)
