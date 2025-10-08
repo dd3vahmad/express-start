@@ -1,4 +1,8 @@
+<% if (answers.language === 'JavaScript') { %>
 import express from 'express';
+<% } else { %>
+import express, { Request, Response } from 'express';
+<% } %>
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -7,11 +11,9 @@ dotenv.config();
 
 const app = express();
 
-// Security & basics
 app.use(helmet());
 app.use(cors());
 
-// Middleware based on choices
 <% if (answers.parser) { %>
 import bodyParser from 'body-parser';
 app.use(bodyParser.json());
@@ -20,8 +22,6 @@ app.use(bodyParser.json());
 import morgan from 'morgan';
 app.use(morgan('combined'));
 <% } %>
-
-// ORM stub
 <% if (answers.orm === 'Prisma') { %>
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
@@ -29,35 +29,34 @@ const prisma = new PrismaClient();
 import { Sequelize } from 'sequelize';
 const sequelize = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost:5432/mydb');
 <% } %>
-
-// Routes
+<% if (answers.language === 'JavaScript') { %>
 app.get('/', (req, res) => {
   res.json({ message: 'Hello from ExpressStart!' });
 });
+<% } else { %>
+app.get('/', (req: Request, res: Response) => {
+  res.json({ message: 'Hello from ExpressStart!' });
+});
+<% } %>
 
-// Error handler
 <% if (answers.language === 'JavaScript') { %>
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });
-<% } %>
-<% if (answers.language === 'TypeScript') { %>
+<% } else { %>
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });
 <% } %>
-
 <% if (answers.extendPrototypes) { %>
-// Extend prototypes (opt-in call)
 <% if (answers.language === 'JavaScript') { %>  
 import { extendPrototypes } from './utils/extend-prototypes.js';
-<% } %>
-<% if (answers.language === 'TypeScript') { %>  
+<% } else { %>
 import { extendPrototypes } from './utils/extend-prototypes';
 <% } %>
-extendPrototypes();  // Uncomment to enable utils
+extendPrototypes();  // Comment to disable utils
 <% } %>
 
 export default app;

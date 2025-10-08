@@ -1,14 +1,21 @@
 # <%= projectName %>
 
-ExpressStart scaffolded project.
+ExpressStart project.
 
 ## Quick Start
 npm install
+<% if (answers.orm === 'Prisma') { %>
+npx prisma generate
+<% } %>
 cp .env.example .env
 npm run dev
 
 ## Utils
-Prototype extensions are available in `src/utils/extend-prototypes.ts`. Call `extendPrototypes()` in index.ts to enable.
+<% if (answers.language === 'TypeScript') { %> 
+Prototype extensions are available in `src/utils/extend-prototypes.ts`. Call `extendPrototypes()` in app.js to enable.
+<% } else { %>
+Prototype extensions are available in `src/utils/extend-prototypes.js`. Call `extendPrototypes()` in app.js to enable.
+<% } %>
 
 ## Warnings
 - Prototype extensions use non-enumerable properties for safety.

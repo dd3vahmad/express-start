@@ -95,6 +95,8 @@ const program = new Command()
 
     cd ${name}
     npm install
+    ${answers.orm === "Prisma" && "npx prisma generate"}
+    cp .env.example .env
     npm run dev
       `)
     );
