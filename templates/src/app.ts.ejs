@@ -36,14 +36,27 @@ app.get('/', (req, res) => {
 });
 
 // Error handler
+<% if (answers.language === 'JavaScript') { %>
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something broke!' });
+});
+<% } %>
+<% if (answers.language === 'TypeScript') { %>
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });
+<% } %>
 
 <% if (answers.extendPrototypes) { %>
 // Extend prototypes (opt-in call)
+<% if (answers.language === 'JavaScript') { %>  
+import { extendPrototypes } from './utils/extend-prototypes.js';
+<% } %>
+<% if (answers.language === 'TypeScript') { %>  
 import { extendPrototypes } from './utils/extend-prototypes';
+<% } %>
 extendPrototypes();  // Uncomment to enable utils
 <% } %>
 

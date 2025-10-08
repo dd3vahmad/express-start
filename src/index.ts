@@ -11,11 +11,10 @@ import { fileURLToPath } from "url";
 const program = new Command()
   .name("create-express-start")
   .description("Scaffold an Express.js project with a wizard and utils")
-  .argument("[projectName]", "Name of the project") // optional now
+  .argument("[projectName]", "Name of the project")
   .action(async (projectName?: string) => {
     let name = projectName;
 
-    // If no project name, prompt user for one
     if (!name) {
       const { projectInput } = await inquirer.prompt([
         {
@@ -32,7 +31,6 @@ const program = new Command()
       name = projectInput.trim() as string;
     }
 
-    // Directory safety check
     const destDir = path.join(process.cwd(), name);
     if (await fs.pathExists(destDir)) {
       const { action } = await inquirer.prompt([
@@ -40,7 +38,7 @@ const program = new Command()
           type: "list",
           name: "action",
           message: chalk.yellow(
-            `⚠️ Directory "${name}" already exists. What would you like to do?`
+            `Directory "${name}" already exists. What would you like to do?`
           ),
           choices: [
             { name: "Overwrite existing folder", value: "overwrite" },
@@ -51,7 +49,7 @@ const program = new Command()
       ]);
 
       if (action === "cancel") {
-        console.log(chalk.red("❌ Setup cancelled."));
+        console.log(chalk.red("Setup cancelled."));
         process.exit(0);
       } else if (action === "rename") {
         const { newName } = await inquirer.prompt([
@@ -71,30 +69,34 @@ const program = new Command()
         ]);
         name = newName.trim() as string;
       } else if (action === "overwrite") {
-        console.log(chalk.yellow(`🧹 Removing existing folder "${name}"...`));
+        console.log(chalk.yellow(`Removing existing folder "${name}"...`));
         await fs.remove(destDir);
       }
     }
 
-    console.log(chalk.blue(`🚀 Creating ExpressStart project: ${name}`));
+    console.log(chalk.blue(`Creating ExpressStart project: ${name}`));
 
     const answers = await runWizard();
     await generateProject(name, { ...answers, projectName: name, answers });
 
     console.log(
-      chalk.green(
-        `
-          ✅ Successfully created a new ExpressStart project!
-            
-          Project name: "${name}"\n   
-          
-          Now run these commands:
+      chalk.green(`
+  _____                              ____  _             _   
+ | ____|_  ___ __  _ __ ___  ___ ___/ ___|| |_ __ _ _ __| |_ 
+ |  _| \\ \\/ / '_ \\| '__/ _ \\/ __/ __\\___ \\| __/ _\` | '__| __|
+ | |___ >  <| |_) | | |  __/\\__ \\__ \\___) | || (_| | |  | |_ 
+ |_____/_/\\_\\ .__/|_|  \\___||___/___/____/ \\__\\__,_|_|   \\__|
+             |_|                                              
+      `) +
+      chalk.yellow(`\n Successfully created a new ExpressStart project!\n`) +
+      chalk.white(`
 
-          cd ${name}\n 
-          npm install\ 
-          npm run dev
-        `
-      )
+    Now run these commands:
+
+    cd ${name}
+    npm install
+    npm run dev
+      `)
     );
   })
   .version("1.0.0");
@@ -168,7 +170,7 @@ async function runWizard(): Promise<WizardAnswers> {
 
 async function generateProject(projectName: string, answers: WizardAnswers) {
   if (!projectName || projectName.trim() === "" || projectName === "/" || projectName.startsWith("..")) {
-    throw new Error("❌ Invalid project name or unsafe directory.");
+    throw new Error("Invalid project name or unsafe directory.");
   }
 
   const __filename = fileURLToPath(import.meta.url);
@@ -177,29 +179,32 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
   const templateDir = path.join(__dirname, "../templates");
   const destDir = path.join(process.cwd(), projectName);
 
-  // Safety: Prevent overwriting an existing directory with files
   if (await fs.pathExists(destDir)) {
     const files = await fs.readdir(destDir);
     if (files.length > 0) {
-      throw new Error(`❌ Destination directory '${projectName}' is not empty.`);
+      throw new Error(`Destination directory '${projectName}' is not empty.`);
     }
   }
 
   await fs.ensureDir(destDir);
 
-  // Recursive renderer
   const renderTemplates = async (srcDir: string, destDir: string) => {
     const entries = await fs.readdir(srcDir, { withFileTypes: true });
 
     for (const entry of entries) {
+      if (entry.name === "tsconfig.json.ejs") continue
+
       const srcPath = path.join(srcDir, entry.name);
-      const destPath = path.join(destDir, entry.name.replace(/\.ejs$/, ""));
+      let destName = entry.name.replace(/\.ejs$/, "");
+      if (answers.language === "JavaScript") {
+        destName = destName.replace(/\.ts$/, ".js");
+      }
+      const destPath = path.join(destDir, destName);
 
       if (entry.isDirectory()) {
         await fs.ensureDir(destPath);
-        await renderTemplates(srcPath, destPath); // recursion ✅
+        await renderTemplates(srcPath, destPath);
       } else {
-        // Render EJS template or copy file
         if (entry.name.endsWith(".ejs")) {
           const content = await ejs.renderFile(srcPath, answers, { async: true });
           await fs.writeFile(destPath, content, "utf8");
@@ -212,7 +217,6 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
 
   await renderTemplates(templateDir, destDir);
 
-  // Dynamic package.json
   const pkg: any = {
     name: projectName,
     version: "1.0.0",
@@ -288,7 +292,6 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
 
   await fs.writeJson(path.join(destDir, "package.json"), pkg, { spaces: 2 });
 
-  // TS-specific files
   if (answers.language === "TypeScript") {
     const tsconfig = await ejs.renderFile(
       path.join(templateDir, "tsconfig.json.ejs"),
@@ -297,9 +300,7 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
     );
     await fs.writeFile(path.join(destDir, "tsconfig.json"), tsconfig);
 
-    // Type defs for utils
     const types = `
-// utils/extend-prototypes.d.ts (generated)
 declare global {
   interface Array<T> {
     binarySearch(value: T): number;
@@ -314,8 +315,7 @@ export {};
     `;
 
     const typesDir = path.join(destDir, "src", "types");
-    await fs.ensureDir(typesDir); // ✅ ensure folder exists
-
+    await fs.ensureDir(typesDir);
     await fs.writeFile(path.join(typesDir, "extend-prototypes.d.ts"), types);
   }
 
@@ -326,7 +326,6 @@ export {};
       path.join(destDir, "prisma")
     );
   } else if (answers.orm === "Sequelize") {
-    // Stub a models dir or config
     await fs.ensureDir(path.join(destDir, "src", "models"));
   }
 }

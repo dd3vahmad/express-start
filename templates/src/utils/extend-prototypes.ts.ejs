@@ -1,6 +1,4 @@
 <% if (answers.language == "TypeScript") { %>
-// Safe prototype extensions: non-enumerable, idempotent, opt-in
-
 export function extendPrototypes() {
   // Array.binarySearch (assumes sorted array)
   if (typeof Array.prototype.binarySearch === 'undefined') {
@@ -64,10 +62,7 @@ export function extendPrototypes() {
   console.log('🔧 Prototypes extended safely (non-enumerable)');
 }
 <% } %>
-
 <% if (answers.language === "JavaScript") { %>
-// Safe prototype extensions: non-enumerable, idempotent, opt-in
-
 export function extendPrototypes() {
   // Array.binarySearch (assumes sorted array)
   if (typeof Array.prototype.binarySearch === 'undefined') {

@@ -1,4 +1,9 @@
-import app from "./app.ts";
+<% if (answers.language === 'TypeScript') { %>
+import app from "./app";
+<% } %>
+<% if (answers.language === 'JavaScript') { %>
+import app from "./app.js";
+<% } %>
 
 const PORT = process.env.PORT || 3000;
 
