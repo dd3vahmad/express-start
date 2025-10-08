@@ -10,30 +10,75 @@ import ejs from "ejs";
 const program = new Command()
   .name("create-express-start")
   .description("Scaffold an Express.js project with a wizard and utils")
-  .argument("<projectName>", "Name of the project")
+  .argument("[projectName]", "Name of the project") // optional now
   .action(async (projectName?: string) => {
     let name = projectName;
+
+    // If no project name, prompt user for one
     if (!name) {
       const { projectInput } = await inquirer.prompt([
         {
           type: "input",
           name: "projectInput",
-          message: "Enter your project name",
+          message: "Enter your project name:",
           default: "express-start-app",
           validate(input: string) {
             if (!input.trim()) return "Project name cannot be empty.";
             return true;
           },
-        }
+        },
+      ]);
+      name = projectInput.trim() as string;
+    }
+
+    // Directory safety check
+    const destDir = path.join(process.cwd(), name);
+    if (await fs.pathExists(destDir)) {
+      const { action } = await inquirer.prompt([
+        {
+          type: "list",
+          name: "action",
+          message: chalk.yellow(
+            `⚠️ Directory "${name}" already exists. What would you like to do?`
+          ),
+          choices: [
+            { name: "Overwrite existing folder", value: "overwrite" },
+            { name: "Choose a different project name", value: "rename" },
+            { name: "Cancel setup", value: "cancel" },
+          ],
+        },
       ]);
 
-      name = projectInput.trim() as string;
+      if (action === "cancel") {
+        console.log(chalk.red("❌ Setup cancelled."));
+        process.exit(0);
+      } else if (action === "rename") {
+        const { newName } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "newName",
+            message: "Enter a new project name:",
+            default: `${name}-new`,
+            validate(input: string) {
+              if (!input.trim()) return "Project name cannot be empty.";
+              if (fs.existsSync(path.join(process.cwd(), input))) {
+                return "A folder with this name already exists.";
+              }
+              return true;
+            },
+          },
+        ]);
+        name = newName.trim() as string;
+      } else if (action === "overwrite") {
+        console.log(chalk.yellow(`🧹 Removing existing folder "${name}"...`));
+        await fs.remove(destDir);
+      }
     }
 
     console.log(chalk.blue(`🚀 Creating ExpressStart project: ${name}`));
 
     const answers = await runWizard();
-    await generateProject(name, answers);
+    await generateProject(name, { ...answers, projectName: name });
 
     console.log(
       chalk.green(
@@ -46,6 +91,7 @@ const program = new Command()
 program.parse(process.argv);
 
 interface WizardAnswers {
+  projectName: string;
   language: "JavaScript" | "TypeScript";
   orm: "Prisma" | "Sequelize" | "None";
   validator: "Joi" | "Zod" | "None";
