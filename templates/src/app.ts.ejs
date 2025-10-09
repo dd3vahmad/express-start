@@ -12,20 +12,6 @@ import bodyParser from 'body-parser';
 <% if (answers.logger) { -%>
 import morgan from 'morgan';
 <% } -%>
-<% if (answers.orm === "Prisma") { -%>
-<% if (answers.language === "TypeScript") { -%>
-import { prisma } from "./config/db"
-<% } else { -%>
-import { prisma } from "./config/db.js"
-<% } -%>
-<% } -%>
-<% if (answers.orm === "Sequelize") { -%>
-<% if (answers.language === "TypeScript") { -%>
-import { sequelize, connectDB } from "./config/db"
-<% } else { -%>
-import { sequelize, connectDB } from "./config/db.js"
-<% } -%>
-<% } -%>
 <% if (answers.extendPrototypes) { -%>
 <% if (answers.language === 'JavaScript') { -%>  
 import { extendPrototypes } from './utils/extend-prototypes.js';

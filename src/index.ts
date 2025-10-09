@@ -108,7 +108,7 @@ const program = new Command()
   Now run these commands:\n
     cd ${name}
     npm install
-    ${answers.orm === "Prisma" && "npx prisma generate"}
+    ${answers.orm === "Prisma" ? "npx prisma generate" : ""}
     cp .env.example .env
     npm run dev
       `)
@@ -268,6 +268,12 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
       ...(answers.auth !== "None" && {
         bcryptjs: "^3.0.2",
         "cookie-parser": "^1.4.7",
+      }),
+      ...(answers.validator === "Joi" && {
+        joi: "^18.0.1"
+      }),
+      ...(answers.validator === "Zod" && {
+        zod: "^4.1.11"
       }),
       ...(answers.auth === "JWT" && {
         jsonwebtoken: "^9.0.2"
