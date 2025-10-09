@@ -108,6 +108,7 @@ interface WizardAnswers {
   language: "JavaScript" | "TypeScript";
   orm: "Prisma" | "Sequelize" | "None";
   validator: "Joi" | "Zod" | "None";
+  cache: "Redis" | "Valkey" | "Memcached" | "KeyDB";
   auth: "JWT" | "Session" | "None";
   logger: boolean;
   extendPrototypes: boolean;
