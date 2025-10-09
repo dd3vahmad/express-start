@@ -193,6 +193,8 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
     const entries = await fs.readdir(srcDir, { withFileTypes: true });
 
     for (const entry of entries) {
+      const isPrismaFile = entry.name.startsWith("prisma") || entry.name.endsWith(".prisma");
+      if (isPrismaFile && answers.orm !== "Prisma") continue
       if (entry.name === "tsconfig.json.ejs") continue
 
       const srcPath = path.join(srcDir, entry.name);
