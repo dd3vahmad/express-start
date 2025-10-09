@@ -8,79 +8,94 @@ import path from "path";
 import ejs from "ejs";
 import { fileURLToPath } from "url";
 
+async function cleanupProject(dir: string) {
+  try {
+    if (dir && await fs.pathExists(dir)) {
+      await fs.remove(dir);
+    }
+  } catch (cleanupErr: any) {
+    console.warn(chalk.red(`⚠️ Failed to clean up folder: ${dir}`));
+    console.warn(chalk.gray(cleanupErr.message || cleanupErr));
+  }
+}
+
 const program = new Command()
   .name("create-express-start")
   .description("Scaffold an Express.js project with a wizard and utils")
   .argument("[projectName]", "Name of the project")
   .action(async (projectName?: string) => {
-    let name = projectName;
+    let destDir = ""; // Directory name used for cleanup in case of any abrupt process ending.
 
-    if (!name) {
-      const { projectInput } = await inquirer.prompt([
-        {
-          type: "input",
-          name: "projectInput",
-          message: "Enter your project name:",
-          default: "express-start-app",
-          validate(input: string) {
-            if (!input.trim()) return "Project name cannot be empty.";
-            return true;
-          },
-        },
-      ]);
-      name = projectInput.trim() as string;
-    }
+    try {
+      let name = projectName;
 
-    const destDir = path.join(process.cwd(), name);
-    if (await fs.pathExists(destDir)) {
-      const { action } = await inquirer.prompt([
-        {
-          type: "list",
-          name: "action",
-          message: chalk.yellow(
-            `Directory "${name}" already exists. What would you like to do?`
-          ),
-          choices: [
-            { name: "Overwrite existing folder", value: "overwrite" },
-            { name: "Choose a different project name", value: "rename" },
-            { name: "Cancel setup", value: "cancel" },
-          ],
-        },
-      ]);
-
-      if (action === "cancel") {
-        console.log(chalk.red("Setup cancelled."));
-        process.exit(0);
-      } else if (action === "rename") {
-        const { newName } = await inquirer.prompt([
+      if (!name) {
+        const { projectInput } = await inquirer.prompt([
           {
             type: "input",
-            name: "newName",
-            message: "Enter a new project name:",
-            default: `${name}-new`,
+            name: "projectInput",
+            message: "Enter your project name:",
+            default: "express-start-app",
             validate(input: string) {
               if (!input.trim()) return "Project name cannot be empty.";
-              if (fs.existsSync(path.join(process.cwd(), input))) {
-                return "A folder with this name already exists.";
-              }
               return true;
             },
           },
         ]);
-        name = newName.trim() as string;
-      } else if (action === "overwrite") {
-        console.log(chalk.yellow(`Removing existing folder "${name}"...`));
-        await fs.remove(destDir);
+        name = projectInput.trim() as string;
       }
-    }
 
-    console.log(chalk.green(`Initializing ExpressStart: ${name}\n`));
+      const destDir = path.join(process.cwd(), name);
+      if (await fs.pathExists(destDir)) {
+        const { action } = await inquirer.prompt([
+          {
+            type: "list",
+            name: "action",
+            message: chalk.yellow(
+              `Directory "${name}" already exists. What would you like to do?`
+            ),
+            choices: [
+              { name: "Overwrite existing folder", value: "overwrite" },
+              { name: "Choose a different project name", value: "rename" },
+              { name: "Cancel setup", value: "cancel" },
+            ],
+          },
+        ]);
 
-    const answers = await runWizard();
-    await generateProject(name, { ...answers, projectName: name, answers });
+        if (action === "cancel") {
+          console.log(chalk.red("Setup cancelled."));
+          await cleanupProject(destDir);
+          process.exit(0);
+        } else if (action === "rename") {
+          const { newName } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "newName",
+              message: "Enter a new project name:",
+              default: `${name}-new`,
+              validate(input: string) {
+                if (!input.trim()) return "Project name cannot be empty.";
+                if (fs.existsSync(path.join(process.cwd(), input))) {
+                  return "A folder with this name already exists.";
+                }
+                return true;
+              },
+            },
+          ]);
+          name = newName.trim() as string;
+        } else if (action === "overwrite") {
+          console.log(chalk.yellow(`Removing existing folder "${name}"...`));
+          await fs.remove(destDir);
+        }
+      }
 
-    console.log(
-      chalk.green(`
+      console.log(chalk.green(`Initializing ExpressStart: ${name}\n`));
+
+      const answers = await runWizard();
+      await generateProject(name, { ...answers, projectName: name, answers });
+
+      console.log(
+        chalk.green(`
   _____                              ____  _             _   
  | ____|_  ___ __  _ __ ___  ___ ___/ ___|| |_ __ _ _ __| |_ 
  |  _| \\ \\/ / '_ \\| '__/ _ \\/ __/ __\\___ \\| __/ _\` | '__| __|
@@ -88,8 +103,8 @@ const program = new Command()
  |_____/_/\\_\\ .__/|_|  \\___||___/___/____/ \\__\\__,_|_|   \\__|
             |_|                                              
       `) +
-      chalk.yellow(`\n Successfully created a new ExpressStart project!\n`) +
-      chalk.white(`
+        chalk.yellow(`\n Successfully created a new ExpressStart project!\n`) +
+        chalk.white(`
   Now run these commands:\n
     cd ${name}
     npm install
@@ -97,7 +112,14 @@ const program = new Command()
     cp .env.example .env
     npm run dev
       `)
-    );
+      );
+    } catch (err: any) {
+      await cleanupProject(destDir);
+      console.error(chalk.gray(err.message || err));
+      console.log(chalk.yellow("\nYou can try again by running:\n"));
+      console.log(chalk.cyan("  npx create-express-start <project-name>\n"));
+      process.exit(1);
+    }
   })
   .version("1.0.0");
 
