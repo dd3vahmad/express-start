@@ -248,7 +248,7 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
   const pkg: any = {
     name: projectName,
     version: "1.0.0",
-    type: answers.language === "TypeScript" ? "module" : undefined,
+    type: "module",
     main: answers.language === "TypeScript" ? "dist/server.js" : "src/server.js",
     scripts: {
       start:
