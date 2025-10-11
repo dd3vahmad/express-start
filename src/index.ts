@@ -130,7 +130,7 @@ interface WizardAnswers {
   language: "JavaScript" | "TypeScript";
   orm: "Prisma" | "Sequelize" | "None";
   validator: "Joi" | "Zod" | "None";
-  cache: "Redis" | "Valkey" | "Memcached" | "KeyDB";
+  cache: "Redis" | "Valkey" | "Memcached" | "KeyDB" | "None";
   auth: "JWT" | "Session" | "None";
   logger: boolean;
   extendPrototypes: boolean;
@@ -174,6 +174,13 @@ async function runWizard(): Promise<WizardAnswers> {
       choices: ["Joi", "Zod", "None"] as const,
       default: "None",
     },
+    // {
+    //   type: "list" as const,
+    //   name: "cache",
+    //   message: "Choose a caching service:",
+    //   choices: ["Redis", "Memcached", "Valkey", "KeyDB", "None"] as const,
+    //   default: "None",
+    // },
     {
       type: "confirm" as const,
       name: "logger",
