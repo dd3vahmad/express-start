@@ -223,14 +223,14 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
 
     for (const entry of entries) {
       const isPrismaFile = entry.name.startsWith("prisma") || entry.name.endsWith(".prisma");
+      const isJSFile = entry.name.endsWith(".js.ejs") || entry.name.endsWith(".js");
+      if (answers.language === "JavaScript" && !isJSFile) continue;
+      if (answers.language === "TypeScript" && isJSFile) continue;
       if (isPrismaFile && answers.orm !== "Prisma") continue
       if (entry.name === "tsconfig.json.ejs") continue
 
       const srcPath = path.join(srcDir, entry.name);
       let destName = entry.name.replace(/\.ejs$/, "");
-      if (answers.language === "JavaScript") {
-        destName = destName.replace(/\.ts$/, ".js");
-      }
       const destPath = path.join(destDir, destName);
 
       if (entry.isDirectory()) {

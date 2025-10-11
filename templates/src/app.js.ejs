@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -9,7 +9,7 @@ import bodyParser from 'body-parser';
 import morgan from 'morgan';
 <% } -%>
 <% if (answers.extendPrototypes) { -%>
-import { extendPrototypes } from './utils/extend-prototypes';
+import { extendPrototypes } from './utils/extend-prototypes.js';
 <% } -%>
 
 dotenv.config();
@@ -25,11 +25,11 @@ app.use(bodyParser.json());
 app.use(morgan('combined'));
 <% } -%>
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (req, res) => {
   res.json({ message: 'Hello from ExpressStart!' });
 });
 
-app.use((err: any, req: any, res: any, next: any) => {
+app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });

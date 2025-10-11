@@ -1,8 +1,4 @@
-<% if (answers.language === 'TypeScript') { -%>
-import app from "./app";
-<% } else { -%>
 import app from "./app.js";
-<% } -%>
 
 const PORT = process.env.PORT || 3000;
 
