@@ -130,7 +130,7 @@ interface WizardAnswers {
   language: "JavaScript" | "TypeScript";
   orm: "Prisma" | "Sequelize" | "None";
   validator: "Joi" | "Zod" | "None";
-  cache: "Redis" | "Valkey" | "Memcached" | "KeyDB" | "None";
+  // cache: "Redis" | "Valkey" | "Memcached" | "KeyDB" | "None";
   auth: "JWT" | "Session" | "None";
   logger: boolean;
   lodash: boolean;
@@ -224,13 +224,28 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
     for (const entry of entries) {
       const isPrismaFile = entry.name.startsWith("prisma") || entry.name.endsWith(".prisma");
       const isJSFile = entry.name.endsWith(".js.ejs") || entry.name.endsWith(".js");
+      const isReadMeFile = entry.name.startsWith("README.md");
+
       if (answers.language === "JavaScript" && !isJSFile) continue;
       if (answers.language === "TypeScript" && isJSFile) continue;
-      if (isPrismaFile && answers.orm !== "Prisma") continue
-      if (entry.name === "tsconfig.json.ejs") continue
+      if (isPrismaFile && answers.orm !== "Prisma") continue;
+      if (entry.name === "tsconfig.json.ejs") continue;
 
       const srcPath = path.join(srcDir, entry.name);
       let destName = entry.name.replace(/\.ejs$/, "");
+      if (isReadMeFile) {
+        const isNormalReadMe = entry.name.endsWith(".md.ejs");
+        if (isNormalReadMe) return;
+
+        const useJSReadMe = entry.name.endsWith(".js.ejs") && answers.language === "JavaScript"
+        const useTSReadMe = entry.name.endsWith(".ts.ejs") && answers.language === "TypeScript"
+
+        if (useJSReadMe || useTSReadMe) {
+          destName = "README.md";
+        } else {
+          continue;
+        }
+      }
       const destPath = path.join(destDir, destName);
 
       if (entry.isDirectory()) {

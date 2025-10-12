@@ -15,7 +15,11 @@
   ],
   "author": "Ahmad Rabiu",
   "license": "MIT",
-  "description": "Scaffold Express.js projects with wizard and prototype utils",
+  "description": "Scaffold a new Express.js projects by selecting dependency options",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dd3vahmad/express-start.git"
+  },
   "dependencies": {
     "chalk": "^5.6.2",
     "commander": "^14.0.1",

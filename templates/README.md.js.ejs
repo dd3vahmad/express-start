@@ -1,0 +1,59 @@
+# <%= projectName %>
+
+ExpressStart
+
+## Quick Start
+npm install
+<% if (answers.orm === 'Prisma') { %>
+npx prisma generate
+<% } %>
+cp .env.example .env
+npm run dev
+
+## Recomended folder structure
+📦 <%= projectName %>/
+├── 📁 src/
+│   ├── 📁 config/           # Environment variables, database, and app configs
+│   │   ├── db.js
+│   │   ├── env.js
+│   │   └── logger.js
+│   │
+│   ├── 📁 models/           # Mongoose / Prisma / Sequelize models
+│   │   └── user.model.js
+│   │
+│   ├── 📁 controllers/      # Route handlers — contain business logic
+│   │   └── user.controller.js
+│   │
+│   ├── 📁 routes/           # Express routers for each resource
+│   │   ├── user.routes.js
+│   │   └── index.js
+│   │
+│   ├── 📁 middlewares/      # Auth, error handling, rate limiting, etc.
+│   │   ├── auth.middleware.js
+│   │   ├── error.middleware.js
+│   │   └── rateLimiter.js
+│   │
+│   ├── 📁 services/         # Business logic, reusable between controllers
+│   │   └── user.service.js
+│   │
+│   ├── 📁 utils/            # Helper functions (e.g., hashing, token utils)
+│   │   ├── hash.util.js
+│   │   ├── jwt.util.js
+│   │   ├── response.util.js
+│   │   └── helpers.util.js  # Tiny helper functions that can live in the same file
+│   │
+│   ├── 📁 validators/       # Joi / Zod validation schemas
+│   │   └── user.validator.js
+│   │
+│   ├── 📁 tests/            # Unit/integration tests (Jest, Mocha, etc.)
+│   │   └── user.test.js
+│   │
+│   ├── app.js               # Express app setup (middlewares, routes)
+│   ├── server.js            # App entry point — starts the server
+│
+├── .env                     # Environment variables
+├── .env.example             # Example of required env vars
+├── .gitignore
+├── package.json
+├── tsconfig.json
+└── README.md
