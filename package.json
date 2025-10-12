@@ -1,9 +1,9 @@
 {
-  "name": "create-express-start",
+  "name": "create-exstart",
   "version": "0.1.0",
   "main": "dist/index.js",
   "bin": {
-    "create-express-start": "dist/bin.js"
+    "create-exstart": "dist/bin.js"
   },
   "files": [
     "dist",

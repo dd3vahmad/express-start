@@ -20,7 +20,7 @@ async function cleanupProject(dir: string) {
 }
 
 const program = new Command()
-  .name("create-express-start")
+  .name("create-exstart")
   .description("Scaffold a new Express.js project from your command line")
   .argument("[projectName]", "Name of the project")
   .action(async (projectName?: string) => {
@@ -117,7 +117,7 @@ const program = new Command()
       await cleanupProject(destDir);
       console.error(chalk.gray(err.message || err));
       console.log(chalk.yellow("\nYou can try again by running:\n"));
-      console.log(chalk.cyan("  npx create-express-start <project-name>\n"));
+      console.log(chalk.cyan("  npx create-exstart <project-name>\n"));
       process.exit(1);
     }
   })
@@ -241,7 +241,7 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
         const useTSReadMe = entry.name.endsWith(".ts.ejs") && answers.language === "TypeScript"
 
         if (useJSReadMe || useTSReadMe) {
-          destName = "README.md";
+          entry.name = "README.md";
         } else {
           continue;
         }

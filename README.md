@@ -10,7 +10,7 @@ in the project setup but are configured differently (it's annoying I know), so I
 It's very easy, just run
 
 ```ts
-  npm install -g create-express-start
+  npm install -g create-exstart
 ```
 
 #### And to use it....
@@ -18,22 +18,8 @@ It's very easy, just run
 Run this command and use the wizard to setup your project
 
 ```ts
-  create-express-start <project-name>
+  npx create-exstart <project-name>
 ```
-
-#### What you should be expecting?
-
-A better version is coming next, rich in useful utils and with ability to add only utils you need, so we can avoid project polution since we work on JavaScript prototypes
-
-The feature will look something like:
-
-```
-  create-express-start add chunk // To add the chunk method
-
-  create-express-start add pick  // To add the pick method
-```
-
-and so on.
 
 #### Contribution
 
