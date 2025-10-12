@@ -1,7 +1,6 @@
 ### ExpressStart
 
-The idea is simple, ExpressStart is just a CLI tool that helps you scaffold new express project with options capability,
-it also tries to extend array and object utilities (like lodash but built-in) using JavaScript's prototypes.
+The idea is simple, ExpressStart is just a CLI tool that helps you scaffold a new express project by selecting dependency options.
 
 Setting up new express projects a lot of times come off as an headache when not done properly or there's just a lot of packages that does the same thing
 in the project setup but are configured differently (it's annoying I know), so I built this to quickly scaffold a new express project as fast as you can create a new Next.js project, just few clicks and selections and you're done!.

@@ -8,9 +8,6 @@ import bodyParser from 'body-parser';
 <% if (answers.logger) { -%>
 import morgan from 'morgan';
 <% } -%>
-<% if (answers.extendPrototypes) { -%>
-import { extendPrototypes } from './utils/extend-prototypes.js';
-<% } -%>
 
 dotenv.config();
 
@@ -33,9 +30,5 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something broke!' });
 });
-
-<% if (answers.extendPrototypes) { -%>
-extendPrototypes(); // Comment to disable utils
-<% } -%>
 
 export default app;

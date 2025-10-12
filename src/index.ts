@@ -14,14 +14,14 @@ async function cleanupProject(dir: string) {
       await fs.remove(dir);
     }
   } catch (cleanupErr: any) {
-    console.warn(chalk.red(`⚠️ Failed to clean up folder: ${dir}`));
+    console.warn(chalk.red(`Failed to clean up folder: ${dir}`));
     console.warn(chalk.gray(cleanupErr.message || cleanupErr));
   }
 }
 
 const program = new Command()
   .name("create-express-start")
-  .description("Scaffold an Express.js project with a wizard and utils")
+  .description("Scaffold a new Express.js project from your command line")
   .argument("[projectName]", "Name of the project")
   .action(async (projectName?: string) => {
     let destDir = ""; // Directory name used for cleanup in case of any abrupt process ending.
@@ -133,7 +133,7 @@ interface WizardAnswers {
   cache: "Redis" | "Valkey" | "Memcached" | "KeyDB" | "None";
   auth: "JWT" | "Session" | "None";
   logger: boolean;
-  extendPrototypes: boolean;
+  lodash: boolean;
   parser: boolean;
   answers: WizardAnswers;
 }
@@ -149,8 +149,8 @@ async function runWizard(): Promise<WizardAnswers> {
     },
     {
       type: "confirm" as const,
-      name: "extendPrototypes",
-      message: "Should extend prototypes?:",
+      name: "lodash",
+      message: "Install lodash for extended utilities?:",
       default: true,
     },
     {
@@ -296,6 +296,7 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
         pg: "^8.13.0",
       }),
       ...(answers.logger && { morgan: "^1.10.1" }),
+      ...(answers.lodash && { lodash: "^4.17.15" }),
       ...(answers.parser && { "body-parser": "^1.20.3" }),
 
       // Always: basics
@@ -340,24 +341,6 @@ async function generateProject(projectName: string, answers: WizardAnswers) {
       { async: true }
     );
     await fs.writeFile(path.join(destDir, "tsconfig.json"), tsconfig);
-
-    const types = `
-declare global {
-  interface Array<T> {
-    binarySearch(value: T): number;
-    chunk(size: number): T[][];
-  }
-  interface Object {
-    pick(keys: string[]): Record<string, any>;
-  }
-}
-
-export {};
-    `;
-
-    const typesDir = path.join(destDir, "src", "types");
-    await fs.ensureDir(typesDir);
-    await fs.writeFile(path.join(typesDir, "extend-prototypes.d.ts"), types);
   }
 
   // ORM extras (basic stubs)

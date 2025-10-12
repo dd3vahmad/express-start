@@ -40,7 +40,7 @@ npm run dev
 │   │   ├── hash.util.ts
 │   │   ├── jwt.util.ts
 │   │   ├── response.util.ts
-│   │   └── extend-prototypes.js
+│   │   └── helpers.util.ts  # Tiny helper functions that can live in the same file
 │   │
 │   ├── 📁 validators/       # Joi / Zod validation schemas
 │   │   └── user.validator.ts
@@ -61,14 +61,3 @@ npm run dev
 ├── package.json
 ├── tsconfig.json
 └── README.md
-
-## Utils
-<% if (answers.language === 'TypeScript') { -%> 
-Prototype extensions are available in `src/utils/extend-prototypes.ts`. Call `extendPrototypes()` in app.js to enable.
-<% } else { -%>
-Prototype extensions are available in `src/utils/extend-prototypes.js`. Call `extendPrototypes()` in app.js to enable.
-<% } -%>
-
-## Warnings
-- Prototype extensions use non-enumerable properties for safety.
-- Test for conflicts if adding libs.
