@@ -121,7 +121,7 @@ const program = new Command()
       process.exit(1);
     }
   })
-  .version("1.0.0");
+  .version("0.1.2");
 
 program.parse(process.argv);
 

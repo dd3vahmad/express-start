@@ -13,6 +13,11 @@ It's very easy, just run
   npm install -g create-exstart
 ```
 
+#### Check installation
+```ts
+create-exstart --version
+```
+
 #### And to use it....
 
 Run this command and use the wizard to setup your project
